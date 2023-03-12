@@ -1,20 +1,28 @@
-const AppError = require('../utils/AppError')
+const { hash } = require('bcryptjs');
+const AppError = require('../utils/AppError');
+const sqliteConnection = require("../database/sqlite");
 
 class UsersController {
-    create(request, response) {
+    async create(request, response) {
         const { name, email, password } = request.body;
 
-        if (!name) {
-            throw new AppError("Nome é obrigatório");
+        const database = await sqliteConnection();
+        const checkAllFields = (!name || !email || !password);
+        const checkUserExist = await database.get("SELECT * FROM users WHERE email = (?)", [email]);
+
+        if (checkAllFields) {
+            throw new AppError("Campos obrigatórios faltando.")
         }
-        if (!email) {
-            throw new AppError("Email é obrigatório");
-        }
-        if (!password) {
-            throw new AppError("Password é obrigatório");
+        if (checkUserExist) {
+            throw new AppError("Este email já está em uso");
         }
 
-        response.status(201).json({ name, email, password });
+        const hashedPassword = await hash(password, 8);
+
+        await database.run("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [name, email, hashedPassword]);
+
+        return response.status(201).json({});
+
     }
 }
 
