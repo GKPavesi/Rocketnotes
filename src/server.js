@@ -1,5 +1,6 @@
 require('express-async-errors');
 
+const migrationsRun = require("./database/sqlite/migrations");
 const AppError = require('./utils/AppError');
 const express = require("express");
 const routes = require('./routes');
@@ -24,6 +25,7 @@ app.use(( error, request, response, next ) => {    ///esse trem aqui é para tra
     })
 
 });
+migrationsRun();  /// conexão com a database e execução das migrations
 
 
 const PORT = 3000;
