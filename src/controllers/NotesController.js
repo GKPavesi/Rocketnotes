@@ -56,7 +56,10 @@ class NotesController {
     }
 
     async index(request, response) { //puxando notas por filtros, tais como usuario
-        const { title, user_id, tags } = request.query;
+        const { user_id, tags } = request.query;
+        let { title } = request.query;
+
+        title = title ?? '';
 
         let notes;
 
